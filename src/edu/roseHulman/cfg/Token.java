@@ -1,5 +1,5 @@
 /*
- * Copyright © 2007Ð2010, Curtis Clifton and Brian T. Kelley
+ * Copyright ï¿½ 2007ï¿½2010, Curtis Clifton and Brian T. Kelley
  * 
  * All rights reserved.
  * 
@@ -22,7 +22,7 @@ public abstract class Token implements Comparable<Token> {
 	 * An enumeration providing quick type comparisons of tokens and giving a
 	 * total order on token types.
 	 */
-	enum TokenCategory {
+	public static enum TokenCategory {
 		/**
 		 * Non-terminals in the grammar.
 		 */
@@ -31,6 +31,10 @@ public abstract class Token implements Comparable<Token> {
 		 * Operators in the grammar of CFGs.
 		 */
 		OPERATOR,
+		/**
+		 * Action symbols in the grammar for semantic translation
+		 */
+		ACTION,
 		/**
 		 * Terminal symbols in the grammar of CFGs.
 		 */
@@ -64,6 +68,13 @@ public abstract class Token implements Comparable<Token> {
 	 */
 	public final boolean isTerminal() {
 		return this.tokenCategory() == TokenCategory.TERMINAL;
+	}
+
+	/**
+	 * @return true if this token is an action
+	 */
+	public final boolean isAction() {
+		return this.tokenCategory() == TokenCategory.ACTION;
 	}
 
 	/**

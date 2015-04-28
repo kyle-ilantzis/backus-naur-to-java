@@ -8,6 +8,8 @@
 
 package edu.roseHulman.cfg;
 
+import backusnaurtojava.cfg.ActionToken;
+
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
@@ -46,6 +48,12 @@ import java.util.List;
  * @author cclifton
  */
 public class CFGParser {
+
+	/**
+	 * What an action symbol is surrounded by on its left and right
+	 */
+	private static final String ACTION_LEFT = "{";
+	private static final String ACTION_RIGHT = "}";
 
 	/**
 	 * Thrown on a syntax error in the CFG.
@@ -295,7 +303,16 @@ public class CFGParser {
 	 * @throws IOException
 	 */
 	private void scanAnotherToken() throws IOException {
-		this.nextToken = this.scanner.nextToken();
+
+		Token tk = this.scanner.nextToken();
+		String txt = tk.toString();
+
+		if ( txt.startsWith( ACTION_LEFT ) && txt.endsWith( ACTION_RIGHT) ) {
+			this.nextToken = new ActionToken( txt );
+		}
+		else {
+			this.nextToken = tk;
+		}
 	}
 
 	/**
@@ -303,7 +320,7 @@ public class CFGParser {
 	 *         or terminal
 	 */
 	private boolean nextTokenIsSymbol() {
-		return this.nextToken.isNonTerminal() || this.nextToken.isTerminal();
+		return this.nextToken.isNonTerminal() || this.nextToken.isTerminal() || this.nextToken.isAction();
 	}
 
 }

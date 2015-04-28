@@ -17,6 +17,6 @@ public class Main {
         cfgParser.parseGrammar();
         Grammar grammar = cfgParser.grammar();
 
-        System.out.println(grammar);
+        System.out.println(grammar.productions());
     }
 }
