@@ -23,7 +23,29 @@ Grammar grammar = cfgParser.grammar();
 
 ## Notation
 
-TODO
+A production is defined as follows
+
+    <A> ::= a <B>
+
+Where **&lt;A&gt;** identifies the non-terminal **A**, **a** is a terminal and **&lt;B&gt;** refers to the non-terminal
+**B**.
+
+You can combined many right hands sides with the pipe symbol **|** making sure each right hand side starts on a **newline**.
+
+    <A> ::= a <B>
+        | b
+
+An empty production can be define with the reserved symbol **e**
+
+    <A> ::= e
+
+Semantic actions can be embedded in the grammar as follows
+
+    <A> ::= a {the_action} b
+
+Where **{the_action}** identifies the action **the_action**.
+
+And finally, make sure that after the last production there is an **empty line**.
 
 ## Attribution
 
