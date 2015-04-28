@@ -1,6 +1,4 @@
-package backusnaurtojava.cfg;
-
-import edu.roseHulman.cfg.Token;
+package edu.roseHulman.cfg;
 
 /**
  * This immutable class represents semantic actions embedded in a CFG.

@@ -8,8 +8,6 @@
 
 package edu.roseHulman.cfg;
 
-import backusnaurtojava.cfg.ActionToken;
-
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;

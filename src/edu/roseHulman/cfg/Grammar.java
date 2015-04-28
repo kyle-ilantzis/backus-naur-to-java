@@ -1,5 +1,5 @@
 /*
- * Copyright © 2007Ð2010, Curtis Clifton and Brian T. Kelley
+ * Copyright ï¿½ 2007ï¿½2010, Curtis Clifton and Brian T. Kelley
  * 
  * All rights reserved.
  * 
@@ -39,6 +39,8 @@ public class Grammar {
 	private Set<NonTerminalToken> nonTerminals = new TreeSet<NonTerminalToken>();
 
 	private Set<TerminalToken> terminals = new TreeSet<TerminalToken>();
+
+	private Set<ActionToken> actions = new TreeSet<ActionToken>();
 
 	private boolean goalProductionAdded = false;
 
@@ -218,6 +220,9 @@ public class Grammar {
 			if (t.isTerminal()) {
 				terminals.add((TerminalToken) t);
 			}
+			else if (t.isAction()) {
+				actions.add((ActionToken) t);
+			}
 		}
 	}
 
@@ -274,6 +279,13 @@ public class Grammar {
 	 */
 	public Set<TerminalToken> terminals() {
 		return Collections.unmodifiableSet(this.terminals);
+	}
+
+	/**
+	 * @return an immutable set of all the action symbols of this grammar
+	 */
+	public Set<ActionToken> actions() {
+		return Collections.unmodifiableSet(this.actions);
 	}
 
 	/**
