@@ -17,10 +17,7 @@ import java.util.TreeSet;
 
 /**
  * This class represents a context-free grammar. The grammar is represented as a
- * collection of productions. Client code can add productions to the grammar.
- * Once all the productions have been added, a client should call
- * {@link #finalizeGrammar()}. This triggers an analysis of the grammar and
- * makes the grammar immutable.
+ * collection of productions.
  * 
  * @author cclifton
  * @author kelleybt
@@ -44,12 +41,6 @@ public class Grammar {
 
 	private boolean goalProductionAdded = false;
 
-	private NullableNonterminals nullableNonterminals;
-
-	private FirstSets firstSets;
-
-	private FollowSets followSets;
-
 	private int nextProductionNumber = 1; // 0 is reserved for GoalProduction
 
 	/**
@@ -70,6 +61,8 @@ public class Grammar {
 
 		private final int productionNumber;
 
+		private boolean onlyActionsAndEmptyString;
+
 		/**
 		 * Constructs a production with the given left- and right-hand sides.
 		 * 
@@ -80,6 +73,11 @@ public class Grammar {
 			this.leftHandSide = lhs;
 			this.rightHandSide = Collections.unmodifiableList(rhs);
 			this.productionNumber = nextProductionNumber++;
+
+			onlyActionsAndEmptyString = true;
+			for (Token t : rhs) {
+				onlyActionsAndEmptyString &= t.isAction() || t.isEmptyString();
+			}
 		}
 
 		/*
@@ -133,8 +131,7 @@ public class Grammar {
 		}
 
 		public boolean goesToEpsilon() {
-			return this.rightHandSide.size() == 1
-					&& this.rightHandSide.get(0).isEmptyString();
+			return onlyActionsAndEmptyString;
 		}
 
 		public NonTerminalToken leftHandSide() {
@@ -193,9 +190,6 @@ public class Grammar {
 	 */
 	public void finalizeGrammar() {
 		addGoalProduction();
-		nullableNonterminals = new NullableNonterminals(this);
-		firstSets = new FirstSets(this, nullableNonterminals);
-		followSets = new FollowSets(this, nullableNonterminals, firstSets);
 	}
 
 	/**
@@ -227,10 +221,9 @@ public class Grammar {
 	}
 
 	/**
-	 * Adds a goal production if one hasn't been added already. Non-private for
-	 * testing.
+	 * Adds a goal production if one hasn't been added already.
 	 */
-	void addGoalProduction() {
+	private void addGoalProduction() {
 		if (this.goalProductionAdded)
 			return;
 		this.goalProductionAdded = true;
@@ -287,26 +280,4 @@ public class Grammar {
 	public Set<ActionToken> actions() {
 		return Collections.unmodifiableSet(this.actions);
 	}
-
-	/**
-	 * @return the nullable non-terminal symbols of this grammar
-	 */
-	public NullableNonterminals nullableNonterminals() {
-		return this.nullableNonterminals;
-	}
-
-	/**
-	 * @return all the first sets of this grammar
-	 */
-	public FirstSets firstSets() {
-		return this.firstSets;
-	}
-
-	/**
-	 * @return all the follow sets of this grammar
-	 */
-	public FollowSets followSets() {
-		return this.followSets;
-	}
-
 }

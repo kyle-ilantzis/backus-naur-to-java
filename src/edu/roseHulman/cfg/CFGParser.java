@@ -133,6 +133,7 @@ public class CFGParser {
 		this.scanner = new Scanner(inputGrammar);
 		scanAnotherToken();
 		matchGrammar();
+		this.grammar().finalizeGrammar();
 	}
 
 	/**
@@ -213,13 +214,20 @@ public class CFGParser {
 	private void matchRightHandSide(NonTerminalToken lhs) throws IOException,
 			SyntaxError {
 		List<Token> rhs = new ArrayList<Token>();
+
 		if (this.nextToken.isEmptyString()) {
 			rhs.add(this.nextToken);
 			scanAnotherToken();
+			matchActionList(rhs);
 		} else {
 			Token firstSym = matchSymbol();
 			rhs.add(firstSym);
-			matchSymbolList(rhs);
+			if (firstSym.isAction()) {
+				matchSymbolOrEmptyList(rhs);
+			}
+			else {
+				matchSymbolList(rhs);
+			}
 		}
 		this.grammar.addProduction(lhs, rhs);
 		if (this.nextToken != OperatorToken.NEWLINE) {
@@ -248,6 +256,28 @@ public class CFGParser {
 		throw new SyntaxError("symbol", this.nextToken);
 	}
 
+	private void matchSymbolOrEmptyList(List<Token> accumulator) throws IOException, SyntaxError {
+
+		if (nextTokenIsSymbol() || this.nextToken.isEmptyString()) {
+			Token tk = this.nextToken;
+			accumulator.add(tk);
+			scanAnotherToken();
+
+			if ( tk.isEmptyString() ) {
+				matchActionList(accumulator);
+			}
+			else if ( tk.isTerminal() || tk.isNonTerminal() ) {
+				matchSymbolList(accumulator);
+			}
+			else {
+				matchSymbolOrEmptyList(accumulator);
+			}
+		} else {
+			throw new SyntaxError("action, terminal or non-terminal",
+					this.nextToken);
+		}
+	}
+
 	/**
 	 * <pre>
 	 * <SymbolList> ::= <Symbol> <SymbolList> 
@@ -268,7 +298,21 @@ public class CFGParser {
 		} else if (this.nextToken == OperatorToken.NEWLINE) {
 			return;
 		} else {
-			throw new SyntaxError("terminal, non-terminal, or newline",
+			throw new SyntaxError("action, terminal, non-terminal, or newline",
+					this.nextToken);
+		}
+	}
+
+	private void matchActionList(List<Token> accumulator) throws IOException, SyntaxError {
+
+		if (this.nextToken.isAction()) {
+			accumulator.add(this.nextToken);
+			scanAnotherToken();
+			matchActionList(accumulator);
+		} else if (this.nextToken == OperatorToken.NEWLINE) {
+			return;
+		} else {
+			throw new SyntaxError("action or newline",
 					this.nextToken);
 		}
 	}
