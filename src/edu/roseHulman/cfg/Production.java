@@ -1,5 +1,5 @@
 /*
- * Copyright © 2007Ð2010, Curtis Clifton and Brian T. Kelley
+ * Copyright ï¿½ 2007ï¿½2010, Curtis Clifton and Brian T. Kelley
  * 
  * All rights reserved.
  * 
@@ -50,5 +50,10 @@ public interface Production extends Comparable<Production> {
 	 * @return the index of this production within the grammar
 	 */
 	public int productionNumber();
+
+	/**
+	 * @return the line on which this production appears
+	 */
+	public int lineNumber();
 
 }

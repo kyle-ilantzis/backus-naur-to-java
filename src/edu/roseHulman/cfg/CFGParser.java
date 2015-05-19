@@ -95,6 +95,8 @@ public class CFGParser {
 
 	private Grammar grammar;
 
+	private int line;
+
 	/**
 	 * Constructs a CFG parser connected to the given input source
 	 *
@@ -131,6 +133,7 @@ public class CFGParser {
 	public void parseGrammar() throws IOException, SyntaxError {
 		this.grammar = new Grammar();
 		this.scanner = new Scanner(inputGrammar);
+		this.line = 0;
 		scanAnotherToken();
 		matchGrammar();
 		this.grammar().finalizeGrammar();
@@ -229,7 +232,7 @@ public class CFGParser {
 				matchSymbolList(rhs);
 			}
 		}
-		this.grammar.addProduction(lhs, rhs);
+		this.grammar.addProduction(lhs, rhs, line + 1);
 		if (this.nextToken != OperatorToken.NEWLINE) {
 			throw new SyntaxError("newline", this.nextToken);
 		}
@@ -348,6 +351,10 @@ public class CFGParser {
 
 		Token tk = this.scanner.nextToken();
 		String txt = tk.toString();
+
+		if ( this.nextToken == OperatorToken.NEWLINE ) {
+			this.line++;
+		}
 
 		if ( txt.startsWith( ACTION_LEFT ) && txt.endsWith( ACTION_RIGHT) ) {
 			this.nextToken = new ActionToken( txt );

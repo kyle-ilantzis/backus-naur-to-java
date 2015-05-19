@@ -61,6 +61,8 @@ public class Grammar {
 
 		private final int productionNumber;
 
+		private final int lineNumber;
+
 		private boolean onlyActionsAndEmptyString;
 
 		/**
@@ -69,10 +71,11 @@ public class Grammar {
 		 * @param lhs
 		 * @param rhs
 		 */
-		public ProductionImpl(NonTerminalToken lhs, List<Token> rhs) {
+		public ProductionImpl(NonTerminalToken lhs, List<Token> rhs, int lineNumber) {
 			this.leftHandSide = lhs;
 			this.rightHandSide = Collections.unmodifiableList(rhs);
 			this.productionNumber = nextProductionNumber++;
+			this.lineNumber = lineNumber;
 
 			onlyActionsAndEmptyString = true;
 			for (Token t : rhs) {
@@ -130,6 +133,8 @@ public class Grammar {
 			return this.productionNumber;
 		}
 
+		public int lineNumber() { return this.lineNumber; }
+
 		public boolean goesToEpsilon() {
 			return onlyActionsAndEmptyString;
 		}
@@ -160,7 +165,7 @@ public class Grammar {
 		 * @param rhs
 		 */
 		public GoalProduction(NonTerminalToken rhs) {
-			super(GOAL_SYMBOL, Arrays.asList(new Token[] { rhs }));
+			super(GOAL_SYMBOL, Arrays.asList(new Token[] { rhs }), 0);
 		}
 
 		@Override
@@ -199,12 +204,20 @@ public class Grammar {
 	 * @param lhs
 	 * @param rhs
 	 */
-	public void addProduction(NonTerminalToken lhs, List<Token> rhs) {
+	public void addProduction(NonTerminalToken lhs, List<Token> rhs, int lineNumber) {
 		if (this.goalProductionAdded) {
 			throw new IllegalStateException(
 					"cannot add productions after grammar has been finalized");
 		}
-		add(new ProductionImpl(lhs, rhs));
+
+		if ( lineNumber == 0 ) {
+			throw new IllegalArgumentException( "lineNumber 0 is reserved for the goal production" );
+		}
+		else if ( lineNumber < 0 ) {
+			throw new IllegalArgumentException( "lineNumber must be greater than 0: " + lineNumber );
+		}
+
+		add(new ProductionImpl(lhs, rhs, lineNumber));
 	}
 
 	private void add(Production production) {
