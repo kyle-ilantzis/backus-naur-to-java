@@ -1,5 +1,5 @@
 /*
- * Copyright © 2007Ð2010, Curtis Clifton and Brian T. Kelley
+ * Copyright ï¿½ 2007ï¿½2010, Curtis Clifton and Brian T. Kelley
  * 
  * All rights reserved.
  * 
@@ -46,7 +46,7 @@ Whitespace = (\b|\t|\f|" ")*  // This probably isn't unicode
 Newline = (\r|\n|\u2028|\u2029|\u000B|\u000C|\u0085)+
 Comment = ("/*" ~"*/")
 Identifier = [:jletter:] ( [:jletterdigit:] | "'" )*
-Terminal = [^<>\r\n\u2028\u2029\u000B\u000C\u0085\b\t\f ]+
+Terminal = [^\r\n\u2028\u2029\u000B\u000C\u0085\b\t\f ]+
 
 %%
 // --------------------------------------------------
@@ -72,7 +72,7 @@ Terminal = [^<>\r\n\u2028\u2029\u000B\u000C\u0085\b\t\f ]+
 	{Comment}				{ /* ignore */ }
 	{Whitespace}				{ /* ignore */ }
 	
-	.						{ System.err.println("unexpected character: " + yytext()); }
+	.						{ System.err.println("unexpected character at line " + (yyline + 1) + " column " + yycolumn + ": " + yytext()); }
 	
 }
 
