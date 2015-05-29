@@ -388,6 +388,9 @@ class Scanner {
   private int zzFinalHighSurrogate = 0;
 
   /* user code: */
+	public int line() { return yyline; }
+	public int column() { return yycolumn; }
+
 	/**
 	 * Nicely named interface to the lexer.
 	 */

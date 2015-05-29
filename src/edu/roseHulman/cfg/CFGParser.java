@@ -12,7 +12,9 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * Hand-coded, top-down parser for context free grammars. The grammar of
@@ -54,38 +56,25 @@ public class CFGParser {
 	private static final String ACTION_RIGHT = "}";
 
 	/**
-	 * Thrown on a syntax error in the CFG.
-	 *
-	 * @author cclifton
+	 * Thrown on a syntax errors in the CFG.
 	 */
 	public class SyntaxError extends Exception {
-		private static final long serialVersionUID = 145527623068151733L;
 
-		/**
-		 * Constructs a syntax error exception for the given token.
-		 *
-		 * @param expected
-		 *            the expected token
-		 * @param token
-		 *            the actual token
-		 */
-		public SyntaxError(String expected, Token token) {
-			super("Expected " + expected + " but got " + token + ".");
+		private final List<String> errors;
+
+		private SyntaxError( List<String> errors ) {
+			super( "There are " + errors.size() + " syntax errors in the grammar." );
+			this.errors = errors;
 		}
 
-		/**
-		 * Constructs a syntax error exception for the given token.
-		 *
-		 * @param expected
-		 *            the expected token
-		 * @param token
-		 *            the actual token
-		 */
-		public SyntaxError(Token expected, Token token) {
-			this(expected.toString(), token);
+		public List<String> getErrors() {
+			return Collections.unmodifiableList( this.errors );
 		}
-
 	}
+
+	// Used when skipping over tokens on a syntax error. When no more tokens are in the input
+	// this is a control mechanism to stop execution.
+	private class EOFTokenException extends RuntimeException {}
 
 	private Reader inputGrammar;
 
@@ -95,7 +84,7 @@ public class CFGParser {
 
 	private Grammar grammar;
 
-	private int line;
+	private List<String> syntaxErrors;
 
 	/**
 	 * Constructs a CFG parser connected to the given input source
@@ -128,15 +117,55 @@ public class CFGParser {
 	 * resulting grammar.
 	 *
 	 * @throws IOException
-	 * @throws SyntaxError
+	 * @throws edu.roseHulman.cfg.CFGParser.SyntaxError
 	 */
 	public void parseGrammar() throws IOException, SyntaxError {
 		this.grammar = new Grammar();
 		this.scanner = new Scanner(inputGrammar);
-		this.line = 0;
+		this.syntaxErrors = new ArrayList<>();
+
 		scanAnotherToken();
-		matchGrammar();
+
+		try { matchGrammar(); }
+		catch( EOFTokenException e ) {}
+
+		if ( !syntaxErrors.isEmpty() ) {
+			throw new SyntaxError( syntaxErrors );
+		}
+
 		this.grammar().finalizeGrammar();
+	}
+
+	/**
+	 * Make note of a syntax error for the current toke.
+	 * Use a predicate to skip over next scanned tokens until predicate returns true for a scanned token.
+	 *
+	 * @param expected
+	 *            a message about the expected token to display to users
+	 * @param p
+	 * 			predicate used to skip over next scanned tokens
+	 *
+	 * @throws java.io.IOException
+	 * @throws edu.roseHulman.cfg.CFGParser.EOFTokenException If EOF is encountered and p does not return true.
+	 */
+	private void syntaxError( String expected, Predicate<Token> p ) throws EOFTokenException, IOException {
+
+		syntaxErrors.add("Expected " + expected + " but got " + this.nextToken + " on line " + (this.scanner.line() + 1) + " near column " + (this.scanner.column() + 1 ) );
+
+		while ( !p.test( this.nextToken ) ) {
+
+			scanAnotherToken();
+
+			if (this.nextToken.isEOF() && !p.test( this.nextToken ) ) {
+				throw new EOFTokenException();
+			}
+		}
+	}
+
+	private void matchOperator( OperatorToken op ) throws IOException {
+		if (this.nextToken != op) {
+			syntaxError( op.getPrettyText(), op::equals );
+		}
 	}
 
 	/**
@@ -144,10 +173,9 @@ public class CFGParser {
 	 * <Grammar> ::= <ProdList>
 	 * </pre>
 	 *
-	 * @throws SyntaxError
 	 * @throws IOException
 	 */
-	private void matchGrammar() throws SyntaxError, IOException {
+	private void matchGrammar() throws IOException {
 		if (this.nextToken.isNonTerminal()) {
 			matchProductionList();
 		} else if (this.nextToken == OperatorToken.NEWLINE) {
@@ -156,7 +184,8 @@ public class CFGParser {
 		} else if (this.nextToken.isEOF()) {
 			return;
 		} else {
-			throw new SyntaxError("non-terminal", this.nextToken);
+			syntaxError( "non-terminal", t -> t.isNonTerminal() || t.isEOF() );
+			matchGrammar();
 		}
 	}
 
@@ -166,17 +195,17 @@ public class CFGParser {
 	 *             |
 	 * </pre>
 	 *
-	 * @throws SyntaxError
 	 * @throws IOException
 	 */
-	private void matchProductionList() throws SyntaxError, IOException {
+	private void matchProductionList() throws IOException {
 		if (this.nextToken.isNonTerminal()) {
 			matchProductionBlock();
 			matchProductionList();
 		} else if (this.nextToken.isEOF()) {
 			return;
 		} else {
-			throw new SyntaxError("non-terminal", this.nextToken);
+			syntaxError( "non-terminal", t -> t.isNonTerminal() || t.isEOF() );
+			matchProductionList();
 		}
 	}
 
@@ -186,20 +215,17 @@ public class CFGParser {
 	 * </pre>
 	 *
 	 * @throws IOException
-	 * @throws SyntaxError
 	 */
-	private void matchProductionBlock() throws IOException, SyntaxError {
+	private void matchProductionBlock() throws IOException {
 		if (this.nextToken.isNonTerminal()) {
 			NonTerminalToken lhs = (NonTerminalToken) this.nextToken;
 			scanAnotherToken();
-			if (this.nextToken != OperatorToken.GOES_TO) {
-				throw new SyntaxError(OperatorToken.GOES_TO.toString(),
-						this.nextToken);
-			}
+			matchOperator(OperatorToken.GOES_TO);
 			scanAnotherToken();
 			matchRightHandSide(lhs);
 		} else {
-			throw new SyntaxError("non-terminal", this.nextToken);
+			syntaxError( "non-terminal", Token::isNonTerminal );
+			matchProductionBlock();
 		}
 	}
 
@@ -212,11 +238,11 @@ public class CFGParser {
 	 * @param lhs
 	 *            the left-hand side of the production
 	 * @throws IOException
-	 * @throws SyntaxError
 	 */
-	private void matchRightHandSide(NonTerminalToken lhs) throws IOException,
-			SyntaxError {
+	private void matchRightHandSide(NonTerminalToken lhs) throws IOException {
 		List<Token> rhs = new ArrayList<Token>();
+
+		int line = this.scanner.line();
 
 		if (this.nextToken.isEmptyString()) {
 			rhs.add(this.nextToken);
@@ -233,9 +259,7 @@ public class CFGParser {
 			}
 		}
 		this.grammar.addProduction(lhs, rhs, line + 1);
-		if (this.nextToken != OperatorToken.NEWLINE) {
-			throw new SyntaxError("newline", this.nextToken);
-		}
+		matchOperator(OperatorToken.NEWLINE);
 		scanAnotherToken();
 		matchOtherProductionsList(lhs);
 	}
@@ -248,18 +272,20 @@ public class CFGParser {
 	 *
 	 * @return the token corresponding to the matched symbol
 	 * @throws IOException
-	 * @throws SyntaxError
 	 */
-	private Token matchSymbol() throws IOException, SyntaxError {
+	private Token matchSymbol() throws IOException {
 		if (nextTokenIsSymbol()) {
 			Token result = this.nextToken;
 			scanAnotherToken();
 			return result;
 		}
-		throw new SyntaxError("symbol", this.nextToken);
+		else {
+			syntaxError( "action, terminal, non-terminal", t -> t.isAction() || t.isTerminal() || t.isNonTerminal() );
+			return matchSymbol();
+		}
 	}
 
-	private void matchSymbolOrEmptyList(List<Token> accumulator) throws IOException, SyntaxError {
+	private void matchSymbolOrEmptyList(List<Token> accumulator) throws IOException {
 
 		if (nextTokenIsSymbol() || this.nextToken.isEmptyString()) {
 			Token tk = this.nextToken;
@@ -276,8 +302,9 @@ public class CFGParser {
 				matchSymbolOrEmptyList(accumulator);
 			}
 		} else {
-			throw new SyntaxError("action, terminal or non-terminal",
-					this.nextToken);
+
+			syntaxError( "action, terminal or non-terminal", t -> t.isAction() || t.isTerminal() || t.isNonTerminal() );
+			matchSymbolOrEmptyList(accumulator);
 		}
 	}
 
@@ -290,10 +317,8 @@ public class CFGParser {
 	 * @param accumulator
 	 *            this list of symbols found so far in the current list
 	 * @throws IOException
-	 * @throws SyntaxError
 	 */
-	private void matchSymbolList(List<Token> accumulator) throws IOException,
-			SyntaxError {
+	private void matchSymbolList(List<Token> accumulator) throws IOException {
 		if (nextTokenIsSymbol()) {
 			accumulator.add(this.nextToken);
 			scanAnotherToken();
@@ -301,12 +326,12 @@ public class CFGParser {
 		} else if (this.nextToken == OperatorToken.NEWLINE) {
 			return;
 		} else {
-			throw new SyntaxError("action, terminal, non-terminal, or newline",
-					this.nextToken);
+			syntaxError( "action, terminal, non-terminal, or newline", t -> t.isAction() || t.isTerminal() || t.isNonTerminal() );
+			matchSymbolList(accumulator);
 		}
 	}
 
-	private void matchActionList(List<Token> accumulator) throws IOException, SyntaxError {
+	private void matchActionList(List<Token> accumulator) throws IOException {
 
 		if (this.nextToken.isAction()) {
 			accumulator.add(this.nextToken);
@@ -315,8 +340,8 @@ public class CFGParser {
 		} else if (this.nextToken == OperatorToken.NEWLINE) {
 			return;
 		} else {
-			throw new SyntaxError("action or newline",
-					this.nextToken);
+			syntaxError( "action or newline", t -> t.isAction() || t == OperatorToken.NEWLINE );
+			matchActionList(accumulator);
 		}
 	}
 
@@ -327,18 +352,17 @@ public class CFGParser {
 	 * </pre>
 	 *
 	 * @param lhs
-	 * @throws SyntaxError
 	 * @throws IOException
 	 */
-	private void matchOtherProductionsList(NonTerminalToken lhs)
-			throws SyntaxError, IOException {
+	private void matchOtherProductionsList(NonTerminalToken lhs) throws IOException {
 		if (this.nextToken == OperatorToken.OR) {
 			scanAnotherToken();
 			matchRightHandSide(lhs);
 		} else if (this.nextToken.isNonTerminal() || this.nextToken.isEOF()) {
 			return;
 		} else {
-			throw new SyntaxError("'|', non-terminal, or EOF", this.nextToken);
+			syntaxError("'|', non-terminal, or EOF", t -> t == OperatorToken.OR || t.isNonTerminal() || t.isEOF() );
+			matchOtherProductionsList(lhs);
 		}
 	}
 
@@ -351,10 +375,6 @@ public class CFGParser {
 
 		Token tk = this.scanner.nextToken();
 		String txt = tk.toString();
-
-		if ( this.nextToken == OperatorToken.NEWLINE ) {
-			this.line++;
-		}
 
 		if ( txt.startsWith( ACTION_LEFT ) && txt.endsWith( ACTION_RIGHT) ) {
 			this.nextToken = new ActionToken( txt );

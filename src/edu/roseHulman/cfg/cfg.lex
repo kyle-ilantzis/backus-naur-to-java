@@ -33,6 +33,9 @@ package edu.roseHulman.cfg;
 %column
 
 %{
+	public int line() { return yyline; }
+	public int column() { return yycolumn; }
+
 	/**
 	 * Nicely named interface to the lexer.
 	 */
@@ -56,24 +59,21 @@ Terminal = [^\r\n\u2028\u2029\u000B\u000C\u0085\b\t\f ]+
 <YYINITIAL> {
 	// keywords
 	"e"						{ return EmptyStringToken.getInstance(); }
-	
+
 	// operators
 	"::="					{ return OperatorToken.GOES_TO; }
 	"|"						{ return OperatorToken.OR; }
 	({Newline} {Whitespace}*)+	{ return OperatorToken.NEWLINE; }
-	
+
 	// non-terminals
 	"<" {Identifier} ">"		{ return new NonTerminalToken(yytext()); }
-	
+
 	// terminals
 	{Terminal}				{ return new TerminalToken(yytext()); }
-	
+
 	// to ignore
 	{Comment}				{ /* ignore */ }
 	{Whitespace}				{ /* ignore */ }
-	
-	.						{ System.err.println("unexpected character at line " + (yyline + 1) + " column " + yycolumn + ": " + yytext()); }
-	
 }
 
 // eof

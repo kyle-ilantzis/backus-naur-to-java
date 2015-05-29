@@ -1,5 +1,5 @@
 /*
- * Copyright © 2007Ð2010, Curtis Clifton and Brian T. Kelley
+ * Copyright ï¿½ 2007ï¿½2010, Curtis Clifton and Brian T. Kelley
  * 
  * All rights reserved.
  * 
@@ -17,26 +17,29 @@ public class OperatorToken extends Token {
 	/**
 	 * '::=' token
 	 */
-	public static final OperatorToken GOES_TO = new OperatorToken("::=");
+	public static final OperatorToken GOES_TO = new OperatorToken("::=", "::=");
 
 	/**
 	 * '|' token
 	 */
-	public static final OperatorToken OR = new OperatorToken("|");
+	public static final OperatorToken OR = new OperatorToken("|", "|");
 
 	/**
 	 * One or more newline characters with any intervening whitespace
 	 */
-	public static final OperatorToken NEWLINE = new OperatorToken("\\n");
+	public static final OperatorToken NEWLINE = new OperatorToken("\\n", "newline");
 
-	private final String tokenTest;
+	private final String tokenText;
+
+	private final String prettyText;
 
 	private final int creationOrder;
 
 	private static int nextCreationCount = 0;
 
-	private OperatorToken(String tokenText) {
-		this.tokenTest = tokenText;
+	private OperatorToken(String tokenText, String prettyText ) {
+		this.tokenText = tokenText;
+		this.prettyText = prettyText;
 		this.creationOrder = nextCreationCount++;
 	}
 
@@ -47,7 +50,14 @@ public class OperatorToken extends Token {
 	 */
 	@Override
 	public String toString() {
-		return this.tokenTest;
+		return this.tokenText;
+	}
+
+	/**
+	 * @return The appropriate text to display to a user for messages and the like.
+	 */
+	public String getPrettyText() {
+		return prettyText;
 	}
 
 	@Override

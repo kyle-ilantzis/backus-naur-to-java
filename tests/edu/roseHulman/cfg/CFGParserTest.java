@@ -85,4 +85,32 @@ public class CFGParserTest {
         String input = "<S> ::=\n";
         Grammars.getGrammarFrom( input );
     }
+
+    @Test(expected = CFGParser.SyntaxError.class)
+    public void testGoesToSymbolOmitted() throws Exception {
+
+        String input = "<S> a b c\n";
+        Grammars.getGrammarFrom( input );
+    }
+
+    @Test(expected = CFGParser.SyntaxError.class)
+    public void testOROperatorOnSameLine() throws Exception {
+
+        String input = "<S> ::= a | b\n";
+        Grammars.getGrammarFrom( input );
+    }
+
+    @Test(expected = CFGParser.SyntaxError.class)
+    public void testNewlineOmitted() throws Exception {
+
+        String input = "<S> ::= a | b";
+        Grammars.getGrammarFrom( input );
+    }
+
+    @Test(expected = CFGParser.SyntaxError.class)
+    public void testStartProductionWithTerminal() throws Exception {
+
+        String input = "a ::= <S>\n";
+        Grammars.getGrammarFrom( input );
+    }
 }
