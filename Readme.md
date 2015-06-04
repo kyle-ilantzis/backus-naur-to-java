@@ -58,4 +58,7 @@ from [CFG Experimenter](http://www.curtclifton.net/cfg-experimenter)
 
 ## License
 
-See CFG Exprimenter's provided [license](src/edu/roseHulman/cfg/license.txt)
+See CFG Exeprimenter's provided [license](src/edu/roseHulman/cfg/license.txt)
+
+Any changes made that do not fall under CFG Experimenter's license consideration are part
+of the public domain.
