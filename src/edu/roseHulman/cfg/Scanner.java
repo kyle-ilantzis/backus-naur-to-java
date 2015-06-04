@@ -203,11 +203,11 @@ class Scanner {
 
   private static final String ZZ_ACTION_PACKED_0 =
     "\1\1\1\2\1\1\1\3\1\2\1\4\1\2\1\5"+
-    "\4\2\1\0\1\2\1\6\1\0\1\7\1\0\1\7"+
-    "\1\1";
+    "\1\2\1\0\3\2\2\0\1\2\1\6\1\0\1\7"+
+    "\2\0\1\7\1\1";
 
   private static int [] zzUnpackAction() {
-    int [] result = new int[20];
+    int [] result = new int[23];
     int offset = 0;
     offset = zzUnpackAction(ZZ_ACTION_PACKED_0, offset, result);
     return result;
@@ -233,11 +233,11 @@ class Scanner {
 
   private static final String ZZ_ROWMAP_PACKED_0 =
     "\0\0\0\20\0\40\0\60\0\100\0\20\0\120\0\20"+
-    "\0\140\0\160\0\200\0\220\0\240\0\260\0\20\0\300"+
-    "\0\20\0\320\0\340\0\340";
+    "\0\140\0\160\0\200\0\220\0\240\0\260\0\300\0\320"+
+    "\0\20\0\340\0\20\0\360\0\u0100\0\u0110\0\u0110";
 
   private static int [] zzUnpackRowMap() {
-    int [] result = new int[20];
+    int [] result = new int[23];
     int offset = 0;
     offset = zzUnpackRowMap(ZZ_ROWMAP_PACKED_0, offset, result);
     return result;
@@ -262,16 +262,18 @@ class Scanner {
   private static final String ZZ_TRANS_PACKED_0 =
     "\1\2\2\3\3\4\1\5\3\2\1\6\1\7\1\2"+
     "\1\10\1\11\2\2\5\0\12\2\1\0\3\3\15\0"+
-    "\5\4\12\0\1\2\5\0\1\2\1\12\11\2\5\0"+
-    "\5\2\1\13\5\2\5\0\2\2\1\14\1\2\1\14"+
-    "\5\2\1\12\5\15\1\12\1\16\10\12\1\2\5\0"+
-    "\6\2\1\17\4\2\1\20\3\0\1\20\2\2\3\14"+
-    "\4\2\1\21\7\15\1\22\10\15\1\12\5\15\1\2"+
-    "\1\16\10\12\1\0\1\20\3\0\1\20\2\0\3\20"+
-    "\4\0\1\23\6\15\1\24\1\22\10\15\20\0";
+    "\5\4\1\12\11\0\1\2\5\0\1\2\1\13\11\2"+
+    "\5\0\5\2\1\14\5\2\5\0\2\2\1\15\1\2"+
+    "\1\15\5\2\7\0\1\16\10\0\1\13\5\17\1\13"+
+    "\1\20\10\13\1\2\5\0\6\2\1\21\4\2\1\22"+
+    "\3\0\1\22\2\2\3\15\4\2\1\23\7\16\1\24"+
+    "\10\16\7\17\1\25\10\17\1\13\5\17\1\2\1\20"+
+    "\10\13\1\0\1\22\3\0\1\22\2\0\3\22\4\0"+
+    "\1\26\6\16\1\4\1\24\10\16\6\17\1\27\1\25"+
+    "\10\17\20\0";
 
   private static int [] zzUnpackTrans() {
-    int [] result = new int[240];
+    int [] result = new int[288];
     int offset = 0;
     offset = zzUnpackTrans(ZZ_TRANS_PACKED_0, offset, result);
     return result;
@@ -309,10 +311,11 @@ class Scanner {
   private static final int [] ZZ_ATTRIBUTE = zzUnpackAttribute();
 
   private static final String ZZ_ATTRIBUTE_PACKED_0 =
-    "\14\1\1\0\2\1\1\0\1\1\1\0\2\11";
+    "\11\1\1\0\3\1\2\0\2\1\1\0\1\1\2\0"+
+    "\2\11";
 
   private static int [] zzUnpackAttribute() {
-    int [] result = new int[20];
+    int [] result = new int[23];
     int offset = 0;
     offset = zzUnpackAttribute(ZZ_ATTRIBUTE_PACKED_0, offset, result);
     return result;
@@ -769,7 +772,7 @@ class Scanner {
             case YYINITIAL: {
               return EOFToken.getInstance();
             }
-            case 21: break;
+            case 24: break;
             default:
         return null;
         }

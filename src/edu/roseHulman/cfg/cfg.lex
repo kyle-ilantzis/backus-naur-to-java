@@ -63,7 +63,7 @@ Terminal = [^\r\n\u2028\u2029\u000B\u000C\u0085\b\t\f ]+
 	// operators
 	"::="					{ return OperatorToken.GOES_TO; }
 	"|"						{ return OperatorToken.OR; }
-	({Newline} {Whitespace}*)+	{ return OperatorToken.NEWLINE; }
+	({Newline} ({Comment}|{Whitespace})*)+	{ return OperatorToken.NEWLINE; }
 
 	// non-terminals
 	"<" {Identifier} ">"		{ return new NonTerminalToken(yytext()); }

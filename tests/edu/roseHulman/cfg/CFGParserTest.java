@@ -8,8 +8,6 @@ import static org.junit.Assert.assertEquals;
 
 public class CFGParserTest {
 
-    //@Test(expected = CFGParser.SyntaxError.class)
-
     @Test
     public void testSingleProduction() throws Exception {
 
@@ -36,7 +34,6 @@ public class CFGParserTest {
         );
     }
 
-
     @Test
     public void testWithEpsilonProductionAndActions() throws Exception {
 
@@ -47,6 +44,68 @@ public class CFGParserTest {
 
         assertEquals(
                 Arrays.asList( Grammars.tokensFromStrings( "<Goal>", "<S>" ), Grammars.tokensFromStrings( "<S>", "a", "<B>", "c" ), Grammars.tokensFromStrings( "<B>", "{a0}", "e", "{a1}", "{a2}", "{a3}" ) ),
+                Grammars.flattenProductions( g )
+        );
+    }
+
+    @Test
+    public void testCommentAtStart() throws Exception {
+
+        String input = "/*\n" +
+                       " * This is a comment block at start\n" +
+                       " */" +
+                       "<S> ::= a\n";
+
+        Grammar g = Grammars.getGrammarFrom( input );
+
+        assertEquals(
+                Arrays.asList( Grammars.tokensFromStrings( "<Goal>", "<S>" ), Grammars.tokensFromStrings( "<S>", "a" ) ),
+                Grammars.flattenProductions( g )
+        );
+    }
+
+    @Test
+    public void testCommentAtEnd() throws Exception {
+
+        String input = "<S> ::= a\n" +
+                       "/*\n" +
+                       " * This is a comment block at end\n" +
+                       " */";
+
+        Grammar g = Grammars.getGrammarFrom( input );
+
+        assertEquals(
+                Arrays.asList( Grammars.tokensFromStrings( "<Goal>", "<S>" ), Grammars.tokensFromStrings( "<S>", "a" ) ),
+                Grammars.flattenProductions( g )
+        );
+    }
+
+    @Test
+    public void testCommentBetweenProductions() throws Exception {
+
+        String input = "<S> ::= a <A>\n" +
+                        "/*\n" +
+                        " * This is a comment block between\n" +
+                        " */\n" +
+                       "<A> ::= b\n";
+
+        Grammar g = Grammars.getGrammarFrom( input );
+
+        assertEquals(
+                Arrays.asList( Grammars.tokensFromStrings( "<Goal>", "<S>" ), Grammars.tokensFromStrings( "<S>", "a", "<A>" ), Grammars.tokensFromStrings( "<A>", "b" ) ),
+                Grammars.flattenProductions( g )
+        );
+    }
+
+    @Test
+    public void testCommentBetweenTerminals() throws Exception {
+
+        String input = "<S> ::= /* c1 */ a /* c2 */ <A>\n";
+
+        Grammar g = Grammars.getGrammarFrom( input );
+
+        assertEquals(
+                Arrays.asList( Grammars.tokensFromStrings( "<Goal>", "<S>" ), Grammars.tokensFromStrings( "<S>", "a", "<A>" ) ),
                 Grammars.flattenProductions( g )
         );
     }
