@@ -45,8 +45,6 @@ Semantic actions can be embedded in the grammar as follows
 
 Where **{the_action}** identifies the action **the_action**.
 
-Finally, make sure that after the last production there is an **empty line**.
-
 You can write C-style comments with the reserved symbols **/\*** and **\*/**
 
     /* The sheep on the farm goes ... baa baa baa! */

@@ -259,6 +259,7 @@ public class CFGParser {
 			}
 		}
 		this.grammar.addProduction(lhs, rhs, line + 1);
+		if (this.nextToken.isEOF()) { return; }
 		matchOperator(OperatorToken.NEWLINE);
 		scanAnotherToken();
 		matchOtherProductionsList(lhs);
@@ -323,7 +324,7 @@ public class CFGParser {
 			accumulator.add(this.nextToken);
 			scanAnotherToken();
 			matchSymbolList(accumulator);
-		} else if (this.nextToken == OperatorToken.NEWLINE) {
+		} else if (this.nextToken == OperatorToken.NEWLINE || this.nextToken.isEOF()) {
 			return;
 		} else {
 			syntaxError( "action, terminal, non-terminal, or newline", t -> t.isAction() || t.isTerminal() || t.isNonTerminal() );
@@ -337,7 +338,7 @@ public class CFGParser {
 			accumulator.add(this.nextToken);
 			scanAnotherToken();
 			matchActionList(accumulator);
-		} else if (this.nextToken == OperatorToken.NEWLINE) {
+		} else if (this.nextToken == OperatorToken.NEWLINE || this.nextToken.isEOF()) {
 			return;
 		} else {
 			syntaxError( "action or newline", t -> t.isAction() || t == OperatorToken.NEWLINE );
